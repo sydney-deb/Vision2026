@@ -7,12 +7,24 @@ class StreamMonitor:
         self.times = deque()
         self.ever_received = False
         self.last_received = None
+        self.last_stamp = None
+        self.backward_count = 0
+        self.last_stamp_went_backward = False
 
     def record(self, now):
         self.ever_received = True
         self.last_received = now
         self.times.append(now)
         self._prune(now)
+
+    def record_stamp(self, stamp):
+        self.last_stamp_went_backward = (
+            self.last_stamp is not None and stamp < self.last_stamp
+        )
+        if self.last_stamp_went_backward:
+            self.backward_count += 1
+
+        self.last_stamp = stamp
 
     def _prune(self, now):
         while self.times and now - self.times[0] > self.window:

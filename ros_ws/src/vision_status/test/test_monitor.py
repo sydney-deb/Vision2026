@@ -27,3 +27,37 @@ def test_independent_timeout():
     cloud.record(1)
     assert camera.status(8) == 'NO DATA'
     assert cloud.status(8) == 'OK'
+
+def test_timestamp_forward():
+    monitor = StreamMonitor()
+
+    monitor.record_stamp(10.0)
+    monitor.record_stamp(10.2)
+    monitor.record_stamp(10.4)
+
+    assert monitor.backward_count == 0
+    assert monitor.last_stamp == 10.4
+    assert monitor.last_stamp_went_backward is False
+
+
+def test_timestamp_backward():
+    monitor = StreamMonitor()
+
+    monitor.record_stamp(10.0)
+    monitor.record_stamp(10.5)
+    monitor.record_stamp(10.2)
+
+    assert monitor.backward_count == 1
+    assert monitor.last_stamp == 10.2
+    assert monitor.last_stamp_went_backward is True
+
+
+def test_timestamp_recovery():
+    monitor = StreamMonitor()
+
+    monitor.record_stamp(10.0)
+    monitor.record_stamp(9.5)
+    monitor.record_stamp(10.5)
+
+    assert monitor.backward_count == 1
+    assert monitor.last_stamp_went_backward is False
